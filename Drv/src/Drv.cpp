@@ -12,8 +12,11 @@ using namespace std;
 
 double Framp = 1.0;							// Hz per turn
 double Ftarget = 100; 						// target frequency in Hz
-double Fstep = 120;						// discritization freq
+double Fstep = 120;							// discritization freq
 double Tstep = 1.0 / Fstep;					// period of one step
+double Fnom = 50.0;							// nominal work frequency of drive
+double Umax = 100.0;						// voltage limiter in percents
+double Uburst = 10.0;
 int	PointsForModel = 24000;
 double Framp_per_step = Framp / Fstep;
 
@@ -35,16 +38,29 @@ void StepProc(){
 			}
 		}
 	}
-	CurFreq = Fnext;
 
-	OutFile << Fnext;
+	static double Ucur = 0;
+	double Unext = Ucur;
+	if(Fnext > Fnom){
+		Unext = Umax;
+	}else{
+		Unext = ((Umax - Uburst)*Fnext/Fnom) + Uburst;
+	}
+
+	CurFreq = Fnext;
+	Ucur = Unext;
+
+
+
+
+	OutFile << Fnext << "; " << Unext;
 	OutFile << endl;
 	OutFile.flush();
 }
 
 int main() {
 	OutFile.open("OutData.txt");
-	OutFile << "Proba\n";
+	OutFile << "Freq; Voltage\n";
 
 	int i=0;
 	for(; i<PointsForModel; ++i){
