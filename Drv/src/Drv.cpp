@@ -17,6 +17,7 @@ double Tstep = 1.0 / Fstep;					// period of one step
 int	PointsForModel = 24000;
 double Framp_per_step = Framp / Fstep;
 
+
 	ofstream OutFile;
 
 void StepProc(){
