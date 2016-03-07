@@ -8,17 +8,20 @@
 
 #include <iostream>
 #include <fstream>
+#include <math.h>
 using namespace std;
 
 double Framp = 1.0;							// Hz per turn
 double Ftarget = 100; 						// target frequency in Hz
-double Fstep = 120;							// discritization freq
+double Fstep = 1200;							// discritization freq
 double Tstep = 1.0 / Fstep;					// period of one step
 double Fnom = 50.0;							// nominal work frequency of drive
 double Umax = 100.0;						// voltage limiter in percents
 double Uburst = 10.0;
-int	PointsForModel = 24000;
+int	PointsForModel = 240000;
 double Framp_per_step = Framp / Fstep;
+
+#define PI 3.1415926L
 
 
 	ofstream OutFile;
@@ -47,20 +50,28 @@ void StepProc(){
 		Unext = ((Umax - Uburst)*Fnext/Fnom) + Uburst;
 	}
 
+	static double PhiCur = 0;
+
+	double dPhi_next = 2*PI*Fnext*Tstep;
+	double PhiNext = fmod ((PhiCur + dPhi_next), (2*PI));
+
+	double d_next = Unext * cos(PhiNext);
+	double q_next = Unext * sin(PhiNext);
+
 	CurFreq = Fnext;
 	Ucur = Unext;
+	PhiCur = PhiNext;
 
 
 
-
-	OutFile << Fnext << "; " << Unext;
+	OutFile << Fnext << "; " << Unext<< "; " << PhiNext;
 	OutFile << endl;
 	OutFile.flush();
 }
 
 int main() {
 	OutFile.open("OutData.txt");
-	OutFile << "Freq; Voltage\n";
+	OutFile << "Freq; Voltage; Angle\n";
 
 	int i=0;
 	for(; i<PointsForModel; ++i){
